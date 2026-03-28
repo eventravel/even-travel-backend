@@ -1,18 +1,17 @@
-// src/config/cloudinary.js → VERSION INFAILLIBLE 2025 (jamais de timeout)
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
-  cloud_name: "duhiyjcjr",
-  api_key: "277871429737892",
-  api_secret: "NoUPZX3nigSw5yxBmF90I6y5gdQ",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
 });
 
-console.log("Cloudinary CONNECTÉ – Mode INFAILLIBLE activé !");
+console.log("Cloudinary CONNECTÉ");
 
 export const uploadToCloudinary = async (
   file,
-  folder = "even-travel/destinations",
+  folder = process.env.CLOUDINARY_FOLDER,
 ) => {
   const buffer = Buffer.from(file.buffer);
 
@@ -20,14 +19,14 @@ export const uploadToCloudinary = async (
     .upload(`data:${file.mimetype};base64,${buffer.toString("base64")}`, {
       folder,
       resource_type: "auto",
-      timeout: 300000, // 5 minutes (énorme)
+      timeout: 300000,
     })
     .then((result) => ({
       url: result.secure_url,
       public_id: result.public_id,
     }))
     .catch((err) => {
-      console.error("Upload échoué (mais on continue) →", err.message);
+      console.error("Upload échoué →", err.message);
       throw err;
     });
 };
@@ -36,7 +35,7 @@ export const deleteFromCloudinary = async (public_id) => {
   try {
     await cloudinary.uploader.destroy(public_id, { invalidate: true });
   } catch (err) {
-    // On ignore → souvent déjà supprimée
+    // ignore
   }
 };
 
